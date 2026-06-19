@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>뚝딱! 문장 공장</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --secondary: #F5A623;
+            --success: #7ED321;
+            --bg: #F0F4F8;
+            --card-fixed: #E2E8F0;
+            --card-when: #FFF3CD;
+            --card-what: #CFF4FC;
+            --card-how: #FFE8D6;
+            --card-emotion: #F8D7DA;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .app-box {
+            background: white;
+            width: 100%;
+            max-width: 850px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .card-section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #444;
+            border-left: 5px solid var(--primary);
+            padding-left: 10px;
+        }
+
+        .section-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: -8px;
+            margin-bottom: 10px;
+            padding-left: 15px;
+        }
+
+        .card-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .word-card {
+            padding: 12px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .word-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .word-card.selected {
+            border: 2px solid #333;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            filter: brightness(0.95);
+        }
+
+        .fixed { background-color: var(--card-fixed); color: #333; cursor: default; }
+        .when { background-color: var(--card-when); color: #664d03; }
+        .what { background-color: var(--card-what); color: #055160; }
+        .how { background-color: var(--card-how); color: #783c00; }
+        .emotion { background-color: var(--card-emotion); color: #842029; }
+        .custom-card { background-color: #E2E8F0; color: #4A5568; border: 2px dashed #CBD5E1; }
+
+        /* 직접 입력창 스타일 */
+        .custom-input-box {
+            display: none;
+            margin-top: 10px;
+            width: 100%;
+        }
+        .custom-input {
+            width: 95%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        /* 결과창 스타일 */
+        .result-area {
+            margin-top: 30px;
+            background-color: #f8f9fa;
+            border: 3px dashed var(--primary);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .result-title {
+            font-size: 1.1rem;
+            color: #777;
+            margin-bottom: 10px;
+        }
+
+        .result-box {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sentence-label {
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-align: left;
+            margin-bottom: 5px;
+        }
+
+        .result-text {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #222;
+            min-height: 35px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .btn-speak {
+            margin-top: 15px;
+            background-color: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-speak:hover {
+            background-color: #6db91c;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🌱 뚝딱! 문장 공장</h1>
+        <p style="color: #666;">카드를 고르거나 직접 글을 써서 나만의 멋진 문장을 완성해 보아요!</p>
+    </header>
+
+    <div id="boxModeA" class="app-box">
+        
+        <div class="card-section">
+            <div class="section-title">문장 시작 단어</div>
+            <div class="card-wrapper">
+                <div class="word-card fixed">저는</div>
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="section-title">1. 언제 / 어디서 (시간과 장소)</div>
+            <div class="card-wrapper" id="wrapper-when">
+                <div class="word-card when" onclick="selectSingleCard(this, 'when', '오늘 학교 돋움반에서')">오늘 학교 돋움반에서</div>
+                <div class="word-card when" onclick="selectSingleCard(this, 'when', '햇살 좋은 날 학교 텃밭에서')">햇살 좋은 날 학교 텃밭에서</div>
+                <div class="word-card when" onclick="selectSingleCard(this, 'when', '방과 후에 학교 텃밭에서')">방과 후에 학교 텃밭에서</div>
+                <div class="word-card when" onclick="selectSingleCard(this, 'when', '동아리 시간에 학교 텃밭에서')">동아리 시간에 학교 텃밭에서</div>
+                <div class="word-card when custom-card" id="card-when-custom" onclick="toggleCustomInput('when')">⌨️ 내가 직접 쓰기</div>
+            </div>
+            <div class="custom-input-box" id="input-box-when">
+                <input type="text" class="custom-input" id="input-when" placeholder="언제 어디서 했는지 직접 적어보세요. (예: 어제 점심시간에 교실에서)" oninput="updateCustomText('when')">
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="section-title">2. 무엇을 (행동, 경험)</div>
+            <div class="section-desc">💡 경험 카드를 <b>최대 2개</b>까지 골라보세요! (다시 누르면 취소됩니다)</div>
+            <div class="card-wrapper" id="wrapper-what">
+                <div class="word-card what" data-connect="모종삽으로 부드러운 흙을 고르고" data-end="모종삽으로 부드러운 흙을 고르는 활동을" onclick="selectMultiCard(this)">흙 고르기</div>
+                <div class="word-card what" data-connect="초록색 상추 모종을 조심조심 심고" data-end="초록색 상추 모종을 조심조심 심는 일을" onclick="selectMultiCard(this)">상추 모종 심기</div>
+                <div class="word-card what" data-connect="동글동글한 씨앗을 땅에 쏙 심고" data-end="동글동글한 씨앗을 땅에 쏙 심는 활동을" onclick="selectMultiCard(this)">씨앗 심기</div>
+                <div class="word-card what" data-connect="조로로 시원한 물을 가득 주고" data-end="조로로 시원한 물을 가득 주는 일을" onclick="selectMultiCard(this)">시원한 물 주기</div>
+                <div class="word-card what" data-connect="쑥쑥 자란 잡초를 영차영차 뽑고" data-end="쑥쑥 자란 잡초를 영차영차 뽑는 일을" onclick="selectMultiCard(this)">잡초 뽑기</div>
+                <div class="word-card what" data-connect="꿈틀대는 지렁이와 작은 벌레를 관찰하고" data-end="꿈틀대는 지렁이와 작은 벌레를 관찰하는 활동을" onclick="selectMultiCard(this)">지렁이와 벌레 관찰</div>
+                <div class="word-card what" data-connect="빨갛게 잘 익은 방울토마토를 따고" data-end="빨갛게 잘 익은 방울토마토를 따는 활동을" onclick="selectMultiCard(this)">방울토마토 따기</div>
+                <div class="word-card what" data-connect="우리가 정성껏 키운 채소를 수확하고" data-end="우리가 정성껏 키운 채소를 수확하는 경험을" onclick="selectMultiCard(this)">채소 수확하기</div>
+                <div class="word-card what" data-connect="싱싱한 상추로 맛있게 쌈을 싸서 먹고" data-end="싱싱한 상추로 맛있게 쌈을 싸서 먹는 활동을" onclick="selectMultiCard(this)">상추 쌈 먹기</div>
+                <div class="word-card what custom-card" id="card-what-custom" onclick="toggleCustomInput('what')">⌨️ 내가 직접 쓰기</div>
+            </div>
+            <div class="custom-input-box" id="input-box-what">
+                <input type="text" class="custom-input" id="input-what" placeholder="무엇을 했는지 '~를 하고' 또는 '~하는 활동을' 형태로 적어보세요." oninput="updateCustomText('what')">
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="section-title">3. 어떻게, 왜 (감정의 이유)</div>
+            <div class="card-wrapper" id="wrapper-how">
+                <div class="word-card how" onclick="selectSingleCard(this, 'how', '식물들이 무럭무럭 자라는 모습을 보니')">식물들이 자라는 모습을 보니</div>
+                <div class="word-card how" onclick="selectSingleCard(this, 'how', '친구들과 힘을 합쳐 함께 일하니')">친구들과 힘을 합쳐 함께 일하니</div>
+                <div class="word-card how" onclick="selectSingleCard(this, 'how', '날씨가 더워서 조금 땀이 났지만')">날씨가 더워서 조금 땀이 났지만</div>
+                <div class="word-card how" onclick="selectSingleCard(this, 'how', '우리가 직접 키운 채소를 직접 맛보니')">우리가 키운 채소를 직접 맛보니</div>
+                <div class="word-card how" onclick="selectSingleCard(this, 'how', '살아있는 생명을 소중히 가꾸어 보니')">살아있는 생명을 소중히 가꾸어 보니</div>
+                <div class="word-card how custom-card" id="card-how-custom" onclick="toggleCustomInput('how')">⌨️ 내가 직접 쓰기</div>
+            </div>
+            <div class="custom-input-box" id="input-box-how">
+                <input type="text" class="custom-input" id="input-how" placeholder="어떻게, 왜 그런 마음이 들었는지 적어보세요. (예: 주렁주렁 열린 열매를 보니)" oninput="updateCustomText('how')">
+            </div>
+        </div>
+
+        <div class="card-section">
+            <div class="section-title">4. 감정 및 마무리</div>
+            <div class="card-wrapper" id="wrapper-emotion">
+                <div class="word-card emotion" onclick="selectSingleCard(this, 'emotion', '마음이 정말 뿌듯하고 보람찼습니다.')">뿌듯하고 보람찼습니다.</div>
+                <div class="word-card emotion" onclick="selectSingleCard(this, 'emotion', '가슴이 벅차고 신나는 기분이었습니다.')">벅차고 신났습니다.</div>
+                <div class="word-card emotion" onclick="selectSingleCard(this, 'emotion', '자연의 신비로움에 무척 신기했습니다.')">무척 신기했습니다.</div>
+                <div class="word-card emotion" onclick="selectSingleCard(this, 'emotion', '입안 가득 행복함이 가득 번졌습니다.')">행복함이 번졌습니다.</div>
+                <div class="word-card emotion" onclick="selectSingleCard(this, 'emotion', '앞으로 더 잘 키우고 싶은 기대가 생겼습니다.')">더 잘 키우고 싶어졌습니다.</div>
+                <div class="word-card emotion custom-card" id="card-emotion-custom" onclick="toggleCustomInput('emotion')">⌨️ 내가 직접 쓰기</div>
+            </div>
+            <div class="custom-input-box" id="input-box-emotion">
+                <input type="text" class="custom-input" id="input-emotion" placeholder="마음이나 감정이 어땠는지 적어보세요. (예: 기분이 날아갈 것 같았습니다.)" oninput="updateCustomText('emotion')">
+            </div>
+        </div>
+
+        <div class="result-area">
+            <div class="result-title">내 생각이 담긴 멋진 글 완성!</div>
+            
+            <div class="result-box">
+                <div class="sentence-label">▶ 중심 문장 (행동과 경험)</div>
+                <div class="result-text" id="result-center">카드를 고르거나 직접 적어보세요!</div>
+            </div>
+            
+            <div class="result-box">
+                <div class="sentence-label">▶ 뒷받침 문장 (어떻게, 왜 / 감정 및 마무리)</div>
+                <div class="result-text" id="result-support">카드를 고르거나 직접 적어보세요!</div>
+            </div>
+
+            <button class="btn-speak" onclick="speakAllText()">🔊 전체 글 목소리로 듣기</button>
+        </div>
+    </div>
+
+    <script>
+        // 전역 상태 변수들
+        let selectedWhen = '';
+        let selectedWhatCards = []; 
+        let selectedHow = '';
+        let selectedEmotion = '';
+
+        let isCustom = { when: false, what: false, how: false, emotion: false };
+
+        // [직접 쓰기] 토글 활성화/비활성화
+        function toggleCustomInput(category) {
+            const inputBox = document.getElementById(`input-box-${category}`);
+            const customCard = document.getElementById(`card-${category}-custom`);
+            const inputField = document.getElementById(`input-${category}`);
+            
+            // 기존 카드 선택 초기화
+            if(category !== 'what') {
+                const siblings = document.getElementById(`wrapper-${category}`).getElementsByClassName('word-card');
+                for(let card of siblings) { card.classList.remove('selected'); }
+            } else {
+                for(let card of selectedWhatCards) { card.classList.remove('selected'); }
+                selectedWhatCards = [];
+            }
+
+            if (!isCustom[category]) {
+                // 직접 쓰기 켬
+                isCustom[category] = true;
+                customCard.classList.add('selected');
+                inputBox.style.display = 'block';
+                inputField.focus();
+            } else {
+                // 직접 쓰기 끔
+                isCustom[category] = false;
+                customCard.classList.remove('selected');
+                inputBox.style.display = 'none';
+                inputField.value = '';
+                
+                if(category === 'when') selectedWhen = '';
+                if(category === 'how') selectedHow = '';
+                if(category === 'emotion') selectedEmotion = '';
+            }
+            updateSentence();
+        }
+
+        // 일반 단일 카드 선택 로직
+        function selectSingleCard(element, category, text) {
+            // 직접 쓰기 비활성화
+            isCustom[category] = false;
+            document.getElementById(`card-${category}-custom`).classList.remove('selected');
+            document.getElementById(`input-box-${category}`).style.display = 'none';
+            document.getElementById(`input-${category}`).value = '';
+
+            const siblings = element.parentNode.getElementsByClassName('word-card');
+            for(let card of siblings) { card.classList.remove('selected'); }
+            element.classList.add('selected');
+
+            if(category === 'when') selectedWhen = text;
+            if(category === 'how') selectedHow = text;
+            if(category === 'emotion') selectedEmotion = text;
+
+            updateSentence();
+        }
+
+        // '무엇을' 복수 카드 선택 로직
+        function selectMultiCard(element) {
+            // 직접 쓰기 비활성화
+            isCustom['what'] = false;
+            document.getElementById(`card-what-custom`).classList.remove('selected');
+            document.getElementById(`input-box-what`).style.display = 'none';
+            document.getElementById(`input-what`).value = '';
+
+            const index = selectedWhatCards.indexOf(element);
+            if (index > -1) {
+                element.classList.remove('selected');
+                selectedWhatCards.splice(index, 1);
+            } else {
+                if (selectedWhatCards.length >= 2) {
+                    alert("경험 카드는 최대 2개까지 고를 수 있습니다!");
+                    return;
+                }
+                element.classList.add('selected');
+                selectedWhatCards.push(element);
+            }
+            updateSentence();
+        }
+
+        // 인풋 입력 시 실시간 업데이트
+        function updateCustomText(category) {
+            const val = document.getElementById(`input-${category}`).value.trim();
+            if(category === 'when') selectedWhen = val;
+            if(category === 'how') selectedHow = val;
+            if(category === 'emotion') selectedEmotion = val;
+            updateSentence();
+        }
+
+        // 종합 문장 조립 및 UI 갱신
+        function updateSentence() {
+            // 1. 중심 문장 빌드
+            let centralSentence = "저는 ";
+            if(selectedWhen) centralSentence += selectedWhen + " ";
+            
+            if (isCustom['what']) {
+                const customWhat = document.getElementById('input-what').value.trim();
+                centralSentence += customWhat ? customWhat + " 했습니다." : "[무엇을 했는지 적어보세요] ";
+            } else {
+                if(selectedWhatCards.length === 1) {
+                    centralSentence += selectedWhatCards[0].getAttribute('data-end') + " 했습니다.";
+                } else if(selectedWhatCards.length === 2) {
+                    centralSentence += selectedWhatCards[0].getAttribute('data-connect') + " " + selectedWhatCards[1].getAttribute('data-end') + " 했습니다.";
+                } else {
+                    centralSentence += "[경험을 골라보세요]";
+                }
+            }
+
+            // 2. 뒷받침 문장 빌드
+            let supportSentence = "";
+            if(selectedHow || selectedEmotion) {
+                supportSentence = `${selectedHow} ${selectedEmotion}`.trim();
+            } else {
+                supportSentence = "[어떻게 왜 / 감정을 완성해 보세요]";
+            }
+
+            // UI 표시 전환 안내문 처리
+            const hasCenterData = selectedWhen || selectedWhatCards.length > 0 || (isCustom['what'] && document.getElementById('input-what').value);
+            document.getElementById('result-center').innerText = hasCenterData ? centralSentence : "카드를 고르거나 직접 적어보세요!";
+            document.getElementById('result-support').innerText = selectedHow || selectedEmotion ? supportSentence : "카드를 고르거나 직접 적어보세요!";
+        }
+
+        // TTS 실행
+        function speakAllText() {
+            const t1 = document.getElementById('result-center').innerText;
+            const t2 = document.getElementById('result-support').innerText;
+            if(t1.includes('적어보세요') || t2.includes('적어보세요') || t1.includes('골라보세요') || t2.includes('완성해')) {
+                alert('글을 완성한 후 들을 수 있습니다.');
+                return;
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(t1 + " " + t2);
+                utterance.lang = 'ko-KR';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('음성 읽어주기를 지원하지 않는 브라우저입니다.');
+            }
+        }
+    </script>
+</body>
+</html>
